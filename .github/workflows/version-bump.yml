@@ -1,0 +1,72 @@
+name: Auto Version Bump
+
+on:
+  schedule:
+    # Runs every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+      
+      - name: Bump version
+        id: bump
+        run: |
+          # Get current version
+          current_version=$(node -p "require('./package.json').version")
+          echo "Current version: $current_version"
+          
+          # Bump patch version using npm
+          npm version patch --no-git-tag-version
+          
+          # Get new version
+          new_version=$(node -p "require('./package.json').version")
+          echo "New version: $new_version"
+          
+          # Set output for PR
+          echo "old_version=$current_version" >> $GITHUB_OUTPUT
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          echo "branch_name=version-bump-$new_version-$(date +%s)" >> $GITHUB_OUTPUT
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: bump version from ${{ steps.bump.outputs.old_version }} to ${{ steps.bump.outputs.new_version }}"
+          branch: ${{ steps.bump.outputs.branch_name }}
+          delete-branch: true
+          title: "chore: bump version to ${{ steps.bump.outputs.new_version }}"
+          body: |
+            ## Version Bump
+            
+            Automated version bump from `${{ steps.bump.outputs.old_version }}` to `${{ steps.bump.outputs.new_version }}`
+            
+            ### Changes
+            - Updated `package.json` version field
+            
+            ---
+            *This PR was automatically created by the version-bump workflow*
+          labels: |
+            automated
+            version-bump
