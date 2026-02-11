@@ -75,7 +75,7 @@ jobs:
           commit-message: 'chore(desktop-app): weekly release v${{ steps.bump_version.outputs.new_version }}'
           title: 'chore(desktop-app): weekly release v${{ steps.bump_version.outputs.new_version }} - ${{ steps.current_date.outputs.month }} ${{ steps.current_date.outputs.day }}'
           body-path: .github/pull_request_template.md
-          branch: desktop-app-weekly-release-${{ steps.current_date.outputs.date_slug }}
+          branch: desktop-app-weekly-release-v${{ steps.bump_version.outputs.new_version }}-${{ steps.current_date.outputs.date_slug }}
           delete-branch: true
           labels: |
             automated
