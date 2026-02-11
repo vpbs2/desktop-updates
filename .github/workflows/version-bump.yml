@@ -38,6 +38,7 @@ jobs:
           echo "date=$(date -u +'%B %d, %Y')" >> $GITHUB_OUTPUT
           echo "month=$(date -u +'%B')" >> $GITHUB_OUTPUT
           echo "day=$(date -u +'%d')" >> $GITHUB_OUTPUT
+          echo "date_formatted=$(date -u +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Get current version
         id: current_version
@@ -129,7 +130,7 @@ jobs:
           commit-message: 'chore(desktop-app): weekly release v${{ steps.bump_version.outputs.new_version }}'
           title: 'chore(desktop-app): weekly release v${{ steps.bump_version.outputs.new_version }} - ${{ steps.current_date.outputs.month }} ${{ steps.current_date.outputs.day }}'
           body-path: pr_body.md
-          branch: chore/weekly-version-bump-${{ steps.bump_version.outputs.new_version }}
+          branch: desktop-app-weekly-release-${{ steps.current_date.outputs.date_formatted }}
           delete-branch: true
           labels: |
             automated
